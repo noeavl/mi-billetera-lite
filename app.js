@@ -1,0 +1,105 @@
+// app.js — Main application logic
+import { addExpense, getAllExpenses } from './db.js';
+
+const CATEGORIES = {
+  comida: 'Comida',
+  transporte: 'Transporte',
+  servicios: 'Servicios',
+  ocio: 'Ocio',
+  otros: 'Otros'
+};
+
+const CATEGORY_ICONS = {
+  comida: '🍔',
+  transporte: '🚌',
+  servicios: '💡',
+  ocio: '🎮',
+  otros: '📦'
+};
+
+const fmtMXN = new Intl.NumberFormat('es-MX', {
+  style: 'currency',
+  currency: 'MXN',
+  minimumFractionDigits: 2
+});
+
+const fmtDate = new Intl.DateTimeFormat('es-MX', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric'
+});
+
+const form = document.getElementById('expense-form');
+const conceptInput = document.getElementById('concept');
+const amountInput = document.getElementById('amount');
+const categorySelect = document.getElementById('category');
+const listUl = document.getElementById('expenses-ul');
+const emptyState = document.getElementById('empty-state');
+const totalEl = document.getElementById('total');
+const submitBtn = form.querySelector('button[type="submit"]');
+
+function renderExpense(expense) {
+  const li = document.createElement('li');
+  li.className = 'expense-item';
+  li.dataset.id = expense.id;
+  li.innerHTML = `
+    <div class="expense-info">
+      <span class="expense-concept">${escapeHtml(expense.concept)}</span>
+      <div class="expense-meta">
+        <span class="expense-category">${CATEGORY_ICONS[expense.category]} ${CATEGORIES[expense.category]}</span>
+        <span class="expense-date">${fmtDate.format(new Date(expense.date))}</span>
+      </div>
+    </div>
+    <span class="expense-amount">${fmtMXN.format(expense.amount)}</span>
+  `;
+  return li;
+}
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, c => ({'&':'&','<':'<','>':'>','"':'"',"'":'''}[c]));
+}
+
+function updateTotal(expenses) {
+  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+  totalEl.textContent = fmtMXN.format(total);
+}
+
+function toggleEmptyState(show) {
+  emptyState.hidden = !show;
+  listUl.hidden = show;
+}
+
+async function refreshList() {
+  const expenses = await getAllExpenses();
+  listUl.innerHTML = '';
+  if (expenses.length === 0) {
+    toggleEmptyState(true);
+  } else {
+    toggleEmptyState(false);
+    expenses.forEach(expense => listUl.appendChild(renderExpense(expense)));
+  }
+  updateTotal(expenses);
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const concept = conceptInput.value.trim();
+  const amount = parseFloat(amountInput.value);
+  const category = categorySelect.value;
+
+  if (!concept || isNaN(amount) || amount <= 0 || !category) return;
+
+  submitBtn.disabled = true;
+  try {
+    await addExpense({ concept, amount, category });
+    form.reset();
+    await refreshList();
+  } catch (err) {
+    console.error('Error saving expense:', err);
+    alert('No se pudo guardar el gasto. Intenta de nuevo.');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+document.addEventListener('DOMContentLoaded', refreshList);
