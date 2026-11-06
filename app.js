@@ -43,6 +43,8 @@ const offlineBadge = document.createElement('div');
 offlineBadge.id = 'offline-badge';
 offlineBadge.textContent = '📴 Sin conexión — Los cambios se guardan localmente';
 offlineBadge.hidden = true;
+offlineBadge.setAttribute('role', 'status');
+offlineBadge.setAttribute('aria-live', 'polite');
 document.body.prepend(offlineBadge);
 
 window.addEventListener('online', () => {

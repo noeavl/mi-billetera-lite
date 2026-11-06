@@ -225,6 +225,10 @@ body {
   font-weight: 500;
   border-bottom: 1px solid #FFE0B2;
   z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 @media (min-width: 480px) {
