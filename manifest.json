@@ -4,9 +4,11 @@
   "description": "Gestor de gastos offline-first para móvil",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#FFFFFF",
   "theme_color": "#2E7D32",
   "lang": "es-MX",
+  "categories": ["finance", "productivity"],
   "icons": [
     {
       "src": "icons/icon-192.png",
