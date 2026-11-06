@@ -71,6 +71,7 @@ function toggleEmptyState(show) {
 
 async function refreshList() {
   const expenses = await getAllExpenses();
+  expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
   listUl.innerHTML = '';
   if (expenses.length === 0) {
     toggleEmptyState(true);
