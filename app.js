@@ -10,11 +10,11 @@ const CATEGORIES = {
 };
 
 const CATEGORY_ICONS = {
-  comida: '🍔',
-  transporte: '🚌',
-  servicios: '💡',
-  ocio: '🎮',
-  otros: '📦'
+  comida: '\u{1F354}',
+  transporte: '\u{1F68C}',
+  servicios: '\u{1F4A1}',
+  ocio: '\u{1F3AE}',
+  otros: '\u{1F4E6}'
 };
 
 const fmtMXN = new Intl.NumberFormat('es-MX', {
@@ -75,7 +75,7 @@ function renderExpense(expense) {
 }
 
 function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, c => ({'&':'&','<':'<','>':'>','"':'"',"'":'''}[c]));
+  return str.replace(/[&<>\"']/g, c => ({'&':'&','<':'<','>':'>','\"':'"',"'":"'"}[c]));
 }
 
 function updateTotal(expenses) {
