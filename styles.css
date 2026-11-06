@@ -60,6 +60,9 @@ body {
 
 .app-main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
   padding: var(--spacing);
   max-width: 600px;
   width: 100%;
@@ -71,7 +74,9 @@ body {
   padding: var(--spacing);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  margin-bottom: var(--spacing);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
 .field {
@@ -141,39 +146,40 @@ body {
 }
 
 .expenses-list {
-  background: var(--color-surface);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
+  flex: 1;
+  overflow-y: auto;
 }
 
 #expenses-ul {
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .expense-item {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--spacing-sm) var(--spacing);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing);
-  border-bottom: 1px solid var(--color-border);
-  min-height: var(--touch-target);
   gap: var(--spacing-sm);
-}
-
-.expense-item:last-child {
-  border-bottom: none;
+  box-shadow: var(--shadow-sm);
+  min-height: var(--touch-target);
 }
 
 .expense-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   flex: 1;
   min-width: 0;
 }
 
 .expense-concept {
   font-weight: 500;
-  font-size: 1rem;
-  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -181,38 +187,33 @@ body {
 
 .expense-meta {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-top: 4px;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
 }
 
 .expense-category {
   font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--color-primary-light);
-  color: white;
-  font-weight: 500;
+  text-transform: capitalize;
 }
 
 .expense-date {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 .expense-amount {
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--color-danger);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  color: var(--color-primary-dark);
   white-space: nowrap;
 }
 
 .empty-state {
   text-align: center;
-  padding: calc(var(--spacing) * 3);
   color: var(--color-text-secondary);
-  font-size: 0.9375rem;
+  padding: var(--spacing) 0;
 }
 
 @media (min-width: 480px) {
@@ -222,6 +223,10 @@ body {
 
   #total {
     font-size: 2rem;
+  }
+
+  .app-main {
+    padding: calc(var(--spacing) * 1.5);
   }
 
   .expense-form {
@@ -241,7 +246,7 @@ body {
 
 @media (min-width: 768px) {
   .app-main {
-    padding: calc(var(--spacing) * 2);
+    max-width: 520px;
   }
 
   .expense-form {
@@ -263,6 +268,10 @@ body {
     width: auto;
     min-width: 160px;
     justify-self: end;
+  }
+
+  .expense-item {
+    padding: var(--spacing) calc(var(--spacing) * 1.5);
   }
 
   .expense-concept {
