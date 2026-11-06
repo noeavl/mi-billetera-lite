@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Green wallet background -->
+  <rect width="512" height="512" rx="64" fill="#2E7D32"/>
+  <!-- Wallet body -->
+  <rect x="64" y="128" width="384" height="256" rx="32" fill="#FFFFFF"/>
+  <!-- Wallet fold line -->
+  <line x1="256" y1="128" x2="256" y2="384" stroke="#E0E0E0" stroke-width="4"/>
+  <!-- Wallet slot lines -->
+  <line x1="128" y1="200" x2="384" y2="200" stroke="#E0E0E0" stroke-width="3"/>
+  <line x1="128" y1="280" x2="384" y2="280" stroke="#E0E0E0" stroke-width="3"/>
+  <!-- Currency symbol -->
+  <text x="256" y="230" font-family="system-ui, sans-serif" font-size="80" font-weight="bold" fill="#2E7D32" text-anchor="middle" dominant-baseline="middle">$</text>
+</svg>
