@@ -14,7 +14,12 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS))
+      .catch((err) => {
+        console.error('SW install failed:', err);
+        throw err;
+      })
   );
   self.skipWaiting();
 });
@@ -25,7 +30,10 @@ self.addEventListener('activate', (event) => {
       Promise.all(
         keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       )
-    )
+    ).catch((err) => {
+      console.error('SW activate failed:', err);
+      throw err;
+    })
   );
   self.clients.claim();
 });
@@ -42,7 +50,9 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
         const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache)).catch((err) => {
+          console.error('SW cache put failed:', err);
+        });
         return response;
       }).catch(() => caches.match('/index.html'));
     })
