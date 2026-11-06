@@ -1,0 +1,27 @@
+{
+  "name": "mi-billetera-lite",
+  "version": "1.0.0",
+  "description": "PWA de gastos offline-first.",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noeavl/mi-billetera-lite.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/noeavl/mi-billetera-lite/issues"
+  },
+  "homepage": "https://github.com/noeavl/mi-billetera-lite#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.65.0"
+  }
+}
