@@ -38,6 +38,23 @@ const emptyState = document.getElementById('empty-state');
 const totalEl = document.getElementById('total');
 const submitBtn = form.querySelector('button[type="submit"]');
 
+let isOnline = navigator.onLine;
+const offlineBadge = document.createElement('div');
+offlineBadge.id = 'offline-badge';
+offlineBadge.textContent = '📴 Sin conexión — Los cambios se guardan localmente';
+offlineBadge.hidden = true;
+document.body.prepend(offlineBadge);
+
+window.addEventListener('online', () => {
+  isOnline = true;
+  offlineBadge.hidden = true;
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  offlineBadge.hidden = false;
+});
+
 function renderExpense(expense) {
   const li = document.createElement('li');
   li.className = 'expense-item';
@@ -100,6 +117,10 @@ form.addEventListener('submit', async (e) => {
     await addExpense({ concept, amount, category });
     form.reset();
     await refreshList();
+    if (!isOnline) {
+      offlineBadge.textContent = '📴 Sin conexión — Gasto guardado localmente ✓';
+      setTimeout(() => { if (!isOnline) offlineBadge.textContent = '📴 Sin conexión — Los cambios se guardan localmente'; }, 3000);
+    }
   } catch (err) {
     console.error('Error saving expense:', err);
     alert('No se pudo guardar el gasto. Intenta de nuevo.');
