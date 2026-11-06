@@ -70,16 +70,21 @@ function toggleEmptyState(show) {
 }
 
 async function refreshList() {
-  const expenses = await getAllExpenses();
-  expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
-  listUl.innerHTML = '';
-  if (expenses.length === 0) {
-    toggleEmptyState(true);
-  } else {
-    toggleEmptyState(false);
-    expenses.forEach(expense => listUl.appendChild(renderExpense(expense)));
+  try {
+    const expenses = await getAllExpenses();
+    expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+    listUl.innerHTML = '';
+    if (expenses.length === 0) {
+      toggleEmptyState(true);
+    } else {
+      toggleEmptyState(false);
+      expenses.forEach(expense => listUl.appendChild(renderExpense(expense)));
+    }
+    updateTotal(expenses);
+  } catch (err) {
+    console.error('Error loading expenses:', err);
+    alert('No se pudieron cargar los gastos. Intenta recargar la página.');
   }
-  updateTotal(expenses);
 }
 
 form.addEventListener('submit', async (e) => {
