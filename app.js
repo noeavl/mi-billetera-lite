@@ -1,5 +1,10 @@
-// app.js — Main application logic
-import { addExpense, getAllExpenses } from './db.js';
+// app.js — Mi Billetera Lite
+
+import {
+  addExpense,
+  getAllExpenses,
+  deleteExpense
+} from './db.js';
 
 const CATEGORIES = {
   comida: 'Comida',
@@ -10,11 +15,11 @@ const CATEGORIES = {
 };
 
 const CATEGORY_ICONS = {
-  comida: '\u{1F354}',
-  transporte: '\u{1F68C}',
-  servicios: '\u{1F4A1}',
-  ocio: '\u{1F3AE}',
-  otros: '\u{1F4E6}'
+  comida: '🍔',
+  transporte: '🚌',
+  servicios: '💡',
+  ocio: '🎮',
+  otros: '📦'
 };
 
 const fmtMXN = new Intl.NumberFormat('es-MX', {
@@ -29,6 +34,7 @@ const fmtDate = new Intl.DateTimeFormat('es-MX', {
   year: 'numeric'
 });
 
+// Elementos HTML
 const form = document.getElementById('expense-form');
 const conceptInput = document.getElementById('concept');
 const amountInput = document.getElementById('amount');
@@ -38,15 +44,23 @@ const emptyState = document.getElementById('empty-state');
 const totalEl = document.getElementById('total');
 const submitBtn = form.querySelector('button[type="submit"]');
 
+// Estado de conexión
 let isOnline = navigator.onLine;
+
+// Indicador offline
 const offlineBadge = document.createElement('div');
+
 offlineBadge.id = 'offline-badge';
-offlineBadge.textContent = '📴 Sin conexión — Los cambios se guardan localmente';
-offlineBadge.hidden = true;
+offlineBadge.textContent =
+  '📴 Sin conexión — Los cambios se guardan localmente';
+
+offlineBadge.hidden = isOnline;
 offlineBadge.setAttribute('role', 'status');
 offlineBadge.setAttribute('aria-live', 'polite');
+
 document.body.prepend(offlineBadge);
 
+// Detectar conexión
 window.addEventListener('online', () => {
   isOnline = true;
   offlineBadge.hidden = true;
@@ -55,80 +69,187 @@ window.addEventListener('online', () => {
 window.addEventListener('offline', () => {
   isOnline = false;
   offlineBadge.hidden = false;
+  offlineBadge.textContent =
+    '📴 Sin conexión — Los cambios se guardan localmente';
 });
 
+// Crear elemento de gasto de forma segura
 function renderExpense(expense) {
   const li = document.createElement('li');
   li.className = 'expense-item';
   li.dataset.id = expense.id;
-  li.innerHTML = `
-    <div class="expense-info">
-      <span class="expense-concept">${escapeHtml(expense.concept)}</span>
-      <div class="expense-meta">
-        <span class="expense-category">${CATEGORY_ICONS[expense.category]} ${CATEGORIES[expense.category]}</span>
-        <span class="expense-date">${fmtDate.format(new Date(expense.date))}</span>
-      </div>
-    </div>
-    <span class="expense-amount">${fmtMXN.format(expense.amount)}</span>
-  `;
+
+  const info = document.createElement('div');
+  info.className = 'expense-info';
+
+  const concept = document.createElement('span');
+  concept.className = 'expense-concept';
+  concept.textContent = expense.concept;
+
+  const meta = document.createElement('div');
+  meta.className = 'expense-meta';
+
+  const category = document.createElement('span');
+  category.className = 'expense-category';
+
+  category.textContent =
+    `${CATEGORY_ICONS[expense.category]} ${CATEGORIES[expense.category]}`;
+
+  const date = document.createElement('span');
+  date.className = 'expense-date';
+
+  const parsedDate = new Date(expense.date);
+
+  date.textContent = Number.isNaN(parsedDate.getTime())
+    ? 'Fecha desconocida'
+    : fmtDate.format(parsedDate);
+
+  const amount = document.createElement('span');
+  amount.className = 'expense-amount';
+  amount.textContent = fmtMXN.format(expense.amount);
+
+  info.append(concept, meta);
+  meta.append(category, date);
+  li.append(info, amount);
+
+  // Botón para eliminar
+  const deleteBtn = document.createElement('button');
+
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'btn-delete';
+  deleteBtn.textContent = 'Eliminar';
+  deleteBtn.setAttribute(
+    'aria-label',
+    `Eliminar gasto ${expense.concept}`
+  );
+
+  deleteBtn.addEventListener('click', async () => {
+    if (!confirm('¿Deseas eliminar este gasto?')) return;
+
+    deleteBtn.disabled = true;
+
+    try {
+      await deleteExpense(expense.id);
+      await refreshList();
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      alert('No se pudo eliminar el gasto.');
+      deleteBtn.disabled = false;
+    }
+  });
+
+  li.appendChild(deleteBtn);
+
   return li;
 }
 
-function escapeHtml(str) {
-  return str.replace(/[&<>\"']/g, c => ({'&':'&','<':'<','>':'>','\"':'"',"'":"'"}[c]));
-}
-
+// Actualizar total
 function updateTotal(expenses) {
-  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const total = expenses.reduce(
+    (sum, expense) => sum + expense.amount,
+    0
+  );
+
   totalEl.textContent = fmtMXN.format(total);
 }
 
+// Mostrar u ocultar mensaje vacío
 function toggleEmptyState(show) {
   emptyState.hidden = !show;
   listUl.hidden = show;
 }
 
+// Actualizar historial
 async function refreshList() {
   try {
     const expenses = await getAllExpenses();
-    expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
-    listUl.innerHTML = '';
+
+    listUl.replaceChildren();
+
     if (expenses.length === 0) {
       toggleEmptyState(true);
     } else {
       toggleEmptyState(false);
-      expenses.forEach(expense => listUl.appendChild(renderExpense(expense)));
+
+      const fragment = document.createDocumentFragment();
+
+      expenses.forEach((expense) => {
+        fragment.appendChild(renderExpense(expense));
+      });
+
+      listUl.appendChild(fragment);
     }
+
     updateTotal(expenses);
-  } catch (err) {
-    console.error('Error loading expenses:', err);
-    alert('No se pudieron cargar los gastos. Intenta recargar la página.');
+
+  } catch (error) {
+    console.error('Error cargando gastos:', error);
+
+    alert(
+      'No se pudieron cargar los gastos. Intenta recargar la página.'
+    );
   }
 }
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
+// Guardar gasto
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
   const concept = conceptInput.value.trim();
-  const amount = parseFloat(amountInput.value);
+  const amount = Number(amountInput.value);
   const category = categorySelect.value;
 
-  if (!concept || isNaN(amount) || amount <= 0 || !category) return;
+  if (
+    !concept ||
+    concept.length > 50 ||
+    !Number.isFinite(amount) ||
+    amount <= 0 ||
+    !Object.hasOwn(CATEGORIES, category)
+  ) {
+    alert('Verifica los datos del gasto.');
+    return;
+  }
 
   submitBtn.disabled = true;
+
   try {
-    await addExpense({ concept, amount, category });
+    await addExpense({
+      concept,
+      amount,
+      category
+    });
+
     form.reset();
+
     await refreshList();
+
     if (!isOnline) {
-      offlineBadge.textContent = '📴 Sin conexión — Gasto guardado localmente ✓';
-      setTimeout(() => { if (!isOnline) offlineBadge.textContent = '📴 Sin conexión — Los cambios se guardan localmente'; }, 3000);
+      offlineBadge.hidden = false;
+
+      offlineBadge.textContent =
+        '📴 Sin conexión — Gasto guardado localmente ✓';
     }
-  } catch (err) {
-    console.error('Error saving expense:', err);
+
+  } catch (error) {
+    console.error('Error guardando gasto:', error);
+
     alert('No se pudo guardar el gasto. Intenta de nuevo.');
+
   } finally {
     submitBtn.disabled = false;
   }
 });
 
-document.addEventListener('DOMContentLoaded', refreshList);
+// Inicializar aplicación
+refreshList();
+
+// Registrar Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => {
+      console.log('Service Worker registrado correctamente');
+    })
+    .catch((error) => {
+      console.error('Error registrando Service Worker:', error);
+    });
+}
